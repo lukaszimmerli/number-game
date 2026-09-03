@@ -12,7 +12,10 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      // Registrierung passiert von Hand in src/main.tsx (updateViaCache: 'none'),
+      // damit GitHub Pages den SW nicht 10 Minuten lang aus dem Cache liefert.
+      injectRegister: null,
+      includeAssets: ['favicon.svg', 'apple-touch-icon-v2.png'],
       manifest: {
         name: 'Dänische Zahlen lernen',
         short_name: 'Dansk Tal',

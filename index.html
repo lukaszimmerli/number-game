@@ -11,11 +11,50 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Dansk Tal" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <!-- Neuer Dateiname statt Ueberschreiben: WebKit haelt Touch-Icons in einem
+         eigenen, sehr langlebigen Cache und der Service Worker hat den alten
+         Pfad vorgecacht. Nur eine frische URL umgeht beide. -->
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png" />
     <title>Dänische Zahlen lernen</title>
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Selbstheilung gegen weiße Seiten: Fehlt nach einem Deploy ein gehashtes
+      // Bundle (404, weil ein alter Service Worker eine alte index.html liefert),
+      // wird einmalig der SW abgemeldet, alle Caches geleert und neu geladen.
+      window.addEventListener(
+        'error',
+        function (event) {
+          var el = event.target;
+          if (!el || (el.tagName !== 'SCRIPT' && el.tagName !== 'LINK')) return;
+          try {
+            if (sessionStorage.getItem('pwa-selfheal')) return;
+            sessionStorage.setItem('pwa-selfheal', '1');
+          } catch (e) {
+            return;
+          }
+          var reload = function () {
+            location.reload();
+          };
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker
+              .getRegistrations()
+              .then(function (regs) {
+                return Promise.all(regs.map(function (r) { return r.unregister(); }));
+              })
+              .then(function () { return caches.keys(); })
+              .then(function (keys) {
+                return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+              })
+              .then(reload, reload);
+          } else {
+            reload();
+          }
+        },
+        true
+      );
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
