@@ -25,9 +25,14 @@ export default defineConfig({
         background_color: '#f8fafc',
         theme_color: '#dc2626',
         icons: [
-          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          // Launcher/Tablet-Icons werden bis zu 10% pro Kante weggeschnitten.
+          // Diese Variante zeichnet das Kreuz deshalb in der inneren 80%-Safe-Zone,
+          // sonst rutscht der Dannebrog-Balken nach dem Zuschnitt sichtbar zu weit
+          // nach links. Arme laufen weiter randlos aus, damit kein Rand entsteht.
+          { src: 'pwa-maskable-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+          { src: 'pwa-maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {

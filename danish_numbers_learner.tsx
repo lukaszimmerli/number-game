@@ -294,9 +294,14 @@ export default function App() {
               <div className="w-full relative">
                 <input
                   ref={inputRef}
-                  type="number"
+                  // type="text" statt "number": keine Spinner-Pfeile im Feld.
+                  // inputMode/pattern halten den Ziffernblock auf Mobilgeräten,
+                  // der Filter im onChange ersetzt die wegfallende Zahlenprüfung.
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  onChange={(e) => setInputValue(e.target.value.replace(/\D/g, ''))}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleQuizSubmit(); }}
                   placeholder="Ziffern eingeben..."
                   className={`w-full text-center text-4xl font-bold py-4 rounded-2xl border-2 outline-none transition-colors ${
