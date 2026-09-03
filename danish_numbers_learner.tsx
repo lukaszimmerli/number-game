@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Volume2, ArrowRight, Check, X, RefreshCw, Headphones, BookOpen, Eye, Gamepad2 } from 'lucide-react';
+import { Volume2, ArrowRight, Check, X, RefreshCw, Headphones, BookOpen, Eye, Gamepad2, Hash } from 'lucide-react';
 
 export default function App() {
-  const [mode, setMode] = useState('learn'); // 'learn', 'quiz' or 'game'
+  const [mode, setMode] = useState('learn'); // 'learn', 'quiz', 'game' or 'browse'
   const [currentNumber, setCurrentNumber] = useState(0);
   const [inputValue, setInputValue] = useState('');
   const [streak, setStreak] = useState(0);
@@ -122,6 +122,18 @@ export default function App() {
     }
   };
 
+  // Alle Zahlen des Bereichs für die Übersicht
+  const allNumbers = Array.from(
+    { length: range.max - range.min + 1 },
+    (_, i) => range.min + i
+  );
+
+  // Übersicht: Zahl antippen -> auswählen und sofort abspielen
+  const selectNumber = (n) => {
+    setCurrentNumber(n);
+    playAudio(n);
+  };
+
   // Neue Spielrunde: eine Zahl plus drei Ablenker
   const setupGameRound = () => {
     const correctNum = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
@@ -176,6 +188,9 @@ export default function App() {
   useEffect(() => {
     if (mode === 'game') {
       setupGameRound();
+    } else if (mode === 'browse') {
+      // Auswahl aus dem vorherigen Modus behalten, nichts automatisch abspielen
+      setFeedback(null);
     } else {
       generateNewNumber(mode === 'quiz');
       if (mode === 'quiz') {
@@ -195,21 +210,27 @@ export default function App() {
         <div className="flex bg-slate-100 p-2 gap-2">
           <button
             onClick={() => setMode('learn')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold transition-all ${mode === 'learn' ? 'bg-white shadow-sm text-red-600' : 'text-slate-500 hover:bg-slate-200'}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl font-semibold text-sm transition-all ${mode === 'learn' ? 'bg-white shadow-sm text-red-600' : 'text-slate-500 hover:bg-slate-200'}`}
           >
             <BookOpen size={18} /> Lernen
           </button>
           <button
             onClick={() => setMode('quiz')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold transition-all ${mode === 'quiz' ? 'bg-white shadow-sm text-red-600' : 'text-slate-500 hover:bg-slate-200'}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl font-semibold text-sm transition-all ${mode === 'quiz' ? 'bg-white shadow-sm text-red-600' : 'text-slate-500 hover:bg-slate-200'}`}
           >
             <Headphones size={18} /> Quiz
           </button>
           <button
             onClick={() => setMode('game')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold transition-all ${mode === 'game' ? 'bg-white shadow-sm text-red-600' : 'text-slate-500 hover:bg-slate-200'}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl font-semibold text-sm transition-all ${mode === 'game' ? 'bg-white shadow-sm text-red-600' : 'text-slate-500 hover:bg-slate-200'}`}
           >
             <Gamepad2 size={18} /> Spiel
+          </button>
+          <button
+            onClick={() => setMode('browse')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl font-semibold text-sm transition-all ${mode === 'browse' ? 'bg-white shadow-sm text-red-600' : 'text-slate-500 hover:bg-slate-200'}`}
+          >
+            <Hash size={18} /> Zahlen
           </button>
         </div>
 
@@ -411,6 +432,49 @@ export default function App() {
                 >
                   Überspringen
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* ZAHLEN-ÜBERSICHT: Zahl auswählen und anhören */}
+          {mode === 'browse' && (
+            <div className="flex flex-col items-center animate-in fade-in zoom-in duration-300">
+
+              <div className="flex justify-between w-full mb-4 items-center">
+                <span className="text-slate-500 font-medium">Zahl antippen zum Anhören</span>
+                <button
+                  onClick={() => playAudio()}
+                  type="button"
+                  className="text-red-600 hover:bg-red-50 rounded-full p-2 transition-colors"
+                  aria-label="Erneut abspielen"
+                >
+                  <Volume2 size={20} className={isPlaying ? 'animate-pulse' : ''} />
+                </button>
+              </div>
+
+              <div className="text-center mb-5">
+                <span className="block text-7xl font-bold text-slate-900 tracking-tighter tabular-nums leading-none">
+                  {currentNumber}
+                </span>
+                <p className="text-2xl font-medium text-red-600 mt-2 capitalize break-words">
+                  {getDanishWord(currentNumber)}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-6 gap-2 w-full max-h-60 overflow-y-auto pr-1">
+                {allNumbers.map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => selectNumber(n)}
+                    className={`py-2.5 text-base font-bold rounded-xl border-2 tabular-nums transition-colors active:scale-95 ${
+                      n === currentNumber
+                        ? 'bg-red-600 border-red-600 text-white'
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
               </div>
             </div>
           )}
